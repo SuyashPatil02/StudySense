@@ -3,14 +3,22 @@
 <h3 class="mb-3">Dashboard</h3>
 
 <form method="GET" class="row g-2 mb-3">
-    <div class="col-md-3"><input type="date" name="start_date" class="form-control" value="{{ start_date }}"></div>
-    <div class="col-md-3"><input type="date" name="end_date" class="form-control" value="{{ end_date }}"></div>
-    <div class="col-md-3"><input type="number" step="0.5" name="daily_goal" value="{{ daily_goal }}"
-            class="form-control" placeholder="Daily Goal (hours)"></div>
+    <div class="col-md-3">
+        <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+    </div>
+    <div class="col-md-3">
+        <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+    </div>
+    <div class="col-md-3">
+        <input type="number" step="0.5" name="daily_goal" value="{{ daily_goal }}" class="form-control"
+            placeholder="Daily Goal (hours)">
+    </div>
     <div class="col-md-3 d-flex gap-2">
         <button class="btn btn-info w-100">Apply</button>
         <a class="btn btn-success w-100"
-            href="{{ url_for('export_report', start_date=start_date, end_date=end_date) }}">Export CSV</a>
+            href="{{ url_for('export_report', start_date=start_date, end_date=end_date) }}">
+            Export CSV
+        </a>
     </div>
 </form>
 
@@ -46,18 +54,97 @@
     <h6>🎯 Daily Goal Progress (Today: {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs)</h6>
 
     <div style="width:100%; height:24px; background:#e9ecef; border-radius:999px; overflow:hidden;">
-        <div data-progress="{{ goal_progress.percent | default(0) }}"
+        <div id="goalBar" data-progress="{{ goal_progress.percent | default(0) }}"
             style="height:100%; width:0%; background:linear-gradient(90deg,#0d6efd,#20c997); color:#fff; font-weight:600; font-size:12px; line-height:24px; text-align:center; transition:width .5s ease;">
             {{ goal_progress.percent | round(1) | default(0) }}%
         </div>
     </div>
 </div>
 
+<!-- Pomodoro Timer -->
+<div class="card glass-card p-3 mt-4 text-center">
+    <h5 id="modeLabel">🍅 Focus Time (25:00)</h5>
+    <h1 id="timerDisplay" style="font-size:3rem; font-weight:700;">25:00</h1>
+
+    <div class="d-flex justify-content-center gap-2 mt-2">
+        <button id="startBtn" class="btn btn-success">Start</button>
+        <button id="pauseBtn" class="btn btn-warning">Pause</button>
+        <button id="resetBtn" class="btn btn-danger">Reset</button>
+    </div>
+</div>
+
 <script>
-    const bar = document.querySelector('[data-progress]');
+    // Goal progress bar
+    const bar = document.getElementById("goalBar");
     if (bar) {
         const p = Math.max(0, Math.min(100, Number(bar.dataset.progress) || 0));
-        bar.style.width = p + '%';
+        bar.style.width = p + "%";
     }
+
+    // Pomodoro Timer (25/5)
+    let workDuration = 25 * 60;
+    let breakDuration = 5 * 60;
+    let timeLeft = workDuration;
+    let isRunning = false;
+    let isWorkMode = true;
+    let timerInterval = null;
+
+    const timerDisplay = document.getElementById("timerDisplay");
+    const modeLabel = document.getElementById("modeLabel");
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function formatTime(seconds) {
+        const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+        const s = (seconds % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+    }
+
+    function updateDisplay() {
+        if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
+        if (modeLabel) modeLabel.textContent = isWorkMode ? "🍅 Focus Time (25:00)" : "☕ Break Time (05:00)";
+    }
+
+    function switchMode() {
+        isWorkMode = !isWorkMode;
+        timeLeft = isWorkMode ? workDuration : breakDuration;
+        updateDisplay();
+        alert(isWorkMode ? "Break over! Back to study." : "Focus session done! Take a 5 min break.");
+    }
+
+    function tick() {
+        if (timeLeft > 0) {
+            timeLeft--;
+            updateDisplay();
+        } else {
+            switchMode();
+        }
+    }
+
+    function startTimer() {
+        if (isRunning) return;
+        isRunning = true;
+        timerInterval = setInterval(tick, 1000);
+    }
+
+    function pauseTimer() {
+        isRunning = false;
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    function resetTimer() {
+        pauseTimer();
+        isWorkMode = true;
+        timeLeft = workDuration;
+        updateDisplay();
+    }
+
+    if (startBtn) startBtn.addEventListener("click", startTimer);
+    if (pauseBtn) pauseBtn.addEventListener("click", pauseTimer);
+    if (resetBtn) resetBtn.addEventListener("click", resetTimer);
+
+    updateDisplay();
 </script>
 {% endblock %}
