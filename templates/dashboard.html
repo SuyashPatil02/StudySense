@@ -44,11 +44,20 @@
 <div class="card glass-card p-3 mt-4">
     <h5>🔥 Study Streak: {{ streak_days }} days</h5>
     <h6>🎯 Daily Goal Progress (Today: {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs)</h6>
-    <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-            style="width: {{ goal_progress.percent | default(0) }}%;">
-            {{ goal_progress.percent | default(0) }}%
+
+    <div style="width:100%; height:24px; background:#e9ecef; border-radius:999px; overflow:hidden;">
+        <div data-progress="{{ goal_progress.percent | default(0) }}"
+            style="height:100%; width:0%; background:linear-gradient(90deg,#0d6efd,#20c997); color:#fff; font-weight:600; font-size:12px; line-height:24px; text-align:center; transition:width .5s ease;">
+            {{ goal_progress.percent | round(1) | default(0) }}%
         </div>
     </div>
 </div>
+
+<script>
+    const bar = document.querySelector('[data-progress]');
+    if (bar) {
+        const p = Math.max(0, Math.min(100, Number(bar.dataset.progress) || 0));
+        bar.style.width = p + '%';
+    }
+</script>
 {% endblock %}

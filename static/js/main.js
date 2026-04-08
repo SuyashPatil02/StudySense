@@ -1,6 +1,13 @@
 window.addEventListener("load", () => {
     const loader = document.getElementById("loader");
     if (loader) loader.style.display = "none";
+
+    const progressBars = document.querySelectorAll(".progress-bar[aria-valuenow]");
+    progressBars.forEach((bar) => {
+        const value = Number.parseFloat(bar.getAttribute("aria-valuenow") || "0");
+        const clamped = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+        bar.style.width = `${clamped}%`;
+    });
 });
 
 // Dark mode
