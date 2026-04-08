@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Advanced Analytics</h3>
+
+<form method="GET" class="row g-2 mb-4">
+    <div class="col-md-4"><input type="date" name="start_date" class="form-control" value="{{ start_date }}"></div>
+    <div class="col-md-4"><input type="date" name="end_date" class="form-control" value="{{ end_date }}"></div>
+    <div class="col-md-4"><button class="btn btn-info w-100">Apply Filter</button></div>
+</form>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card glass-card p-3">
+            <h6>Weekly Trend</h6>
+            <p>{{ advanced.weekly_trend }}</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card glass-card p-3">
+            <h6>Monthly Trend</h6>
+            <p>{{ advanced.monthly_trend }}</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card glass-card p-3">
+            <h6>Mood vs Productivity Correlation</h6>
+            <p>{{ advanced.mood_correlation }}</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card glass-card p-3">
+            <h6>Best Study Start Time</h6>
+            <p>{{ advanced.best_study_time }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 g-3">
+    {% if graph_paths.line_trend %}
+    <div class="col-md-12"><img class="img-fluid rounded shadow" src="/{{ graph_paths.line_trend }}"></div>
+    {% endif %}
+    {% if graph_paths.subject_pie %}
+    <div class="col-md-6"><img class="img-fluid rounded shadow" src="/{{ graph_paths.subject_pie }}"></div>
+    {% endif %}
+    {% if graph_paths.daily_bar %}
+    <div class="col-md-6"><img class="img-fluid rounded shadow" src="/{{ graph_paths.daily_bar }}"></div>
+    {% endif %}
+</div>
+{% endblock %}

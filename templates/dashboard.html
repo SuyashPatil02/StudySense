@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">Dashboard</h3>
+
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-md-3"><input type="date" name="start_date" class="form-control" value="{{ start_date }}"></div>
+    <div class="col-md-3"><input type="date" name="end_date" class="form-control" value="{{ end_date }}"></div>
+    <div class="col-md-3"><input type="number" step="0.5" name="daily_goal" value="{{ daily_goal }}"
+            class="form-control" placeholder="Daily Goal (hours)"></div>
+    <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-info w-100">Apply</button>
+        <a class="btn btn-success w-100"
+            href="{{ url_for('export_report', start_date=start_date, end_date=end_date) }}">Export CSV</a>
+    </div>
+</form>
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="card dashboard-card p-3">
+            <h6>Total Study Hours</h6>
+            <h3>{{ metrics.total_hours }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card p-3">
+            <h6>Most Studied Subject</h6>
+            <h3>{{ metrics.most_subject }}</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card p-3">
+            <h6>Avg Break Time</h6>
+            <h3>{{ metrics.avg_break }} min</h3>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card dashboard-card p-3">
+            <h6>Focus Efficiency</h6>
+            <h3>{{ metrics.avg_efficiency }}%</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card glass-card p-3 mt-4">
+    <h5>🔥 Study Streak: {{ streak_days }} days</h5>
+    <h6>🎯 Daily Goal Progress (Today: {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs)</h6>
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+            style="width: {{ goal_progress.percent | default(0) }}%;">
+            {{ goal_progress.percent | default(0) }}%
+        </div>
+    </div>
+</div>
+{% endblock %}

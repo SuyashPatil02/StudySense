@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card glass-card p-4 slide-up">
+    <h2>Welcome, {{ username }} 👋</h2>
+    <p>This is your intelligent study tracking assistant.</p>
+    <a href="{{ url_for('log_session') }}" class="btn btn-warning"><i class="fa-solid fa-plus"></i> Log Study
+        Session</a>
+</div>
+
+<div class="card glass-card p-4 mt-4">
+    <h4><i class="fa-solid fa-clock"></i> Pomodoro Timer (25/5)</h4>
+    <h2 id="timerDisplay">25:00</h2>
+    <div class="d-flex gap-2">
+        <button class="btn btn-success" onclick="startPomodoro()">Start</button>
+        <button class="btn btn-danger" onclick="resetPomodoro()">Reset</button>
+    </div>
+</div>
+{% endblock %}
