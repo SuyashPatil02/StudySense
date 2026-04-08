@@ -1,18 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card glass-card p-4 slide-up">
-    <h2>Welcome, {{ username }} 👋</h2>
-    <p>This is your intelligent study tracking assistant.</p>
-    <a href="{{ url_for('log_session') }}" class="btn btn-warning"><i class="fa-solid fa-plus"></i> Log Study
-        Session</a>
-</div>
+<div class="card glass-card p-4">
+    <h3 class="mb-2">Welcome, {{ username }} 👋</h3>
+    <p class="mb-4">This is your intelligent study tracking assistant.</p>
 
-<div class="card glass-card p-4 mt-4">
-    <h4><i class="fa-solid fa-clock"></i> Pomodoro Timer (25/5)</h4>
-    <h2 id="timerDisplay">25:00</h2>
-    <div class="d-flex gap-2">
-        <button class="btn btn-success" onclick="startPomodoro()">Start</button>
-        <button class="btn btn-danger" onclick="resetPomodoro()">Reset</button>
+    <div class="card p-3 mb-4"
+        style="background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:14px;">
+        <h5 class="mb-2">💡 Daily Motivation</h5>
+        <p class="mb-0" style="font-size:1.05rem;">
+            “Small progress every day adds up to big results. Stay focused and trust your journey.”
+        </p>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a href="{{ url_for('log_session') }}" class="btn btn-info w-100 py-2">+ Log Study Session</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-success w-100 py-2">📊 Go to Dashboard</a>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ url_for('analytics') }}" class="btn btn-primary w-100 py-2">📈 View Analytics</a>
+        </div>
     </div>
 </div>
 {% endblock %}
