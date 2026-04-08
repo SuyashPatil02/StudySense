@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 import os
-import pandas as pd
 from datetime import datetime
 from utils.analyzer import (
     ensure_files_exist,
@@ -34,6 +33,13 @@ def login_required():
     return "username" in session
 
 
+def to_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 @app.route("/")
 def home():
     if not login_required():
@@ -41,10 +47,11 @@ def home():
     return render_template("home.html", username=session["username"])
 
 
+# -------------------- AUTH --------------------
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        action = request.form.get("action")
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "").strip()
 
@@ -52,12 +59,6 @@ def login():
             flash("Please enter username and password.", "danger")
             return redirect(url_for("login"))
 
-        if action == "register":
-            success, msg = register_user(USERS_FILE, username, password)
-            flash(msg, "success" if success else "danger")
-            return redirect(url_for("login"))
-
-        # default login
         if authenticate_user(USERS_FILE, username, password):
             session["username"] = username
             flash("Login successful!", "success")
@@ -69,12 +70,34 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if not username or not password:
+            flash("Please enter username and password.", "danger")
+            return redirect(url_for("register"))
+
+        success, msg = register_user(USERS_FILE, username, password)
+        flash(msg, "success" if success else "danger")
+
+        if success:
+            return redirect(url_for("login"))
+        return redirect(url_for("register"))
+
+    return render_template("register.html")
+
+
 @app.route("/logout")
 def logout():
     session.clear()
     flash("Logged out successfully.", "info")
     return redirect(url_for("login"))
 
+
+# -------------------- STUDY SESSION --------------------
 
 @app.route("/log-session", methods=["GET", "POST"])
 def log_session():
@@ -83,13 +106,17 @@ def log_session():
 
     if request.method == "POST":
         username = session["username"]
-        subject = request.form.get("subject")
-        study_time = float(request.form.get("study_time", 0))
-        break_time = float(request.form.get("break_time", 0))
-        start_time = request.form.get("start_time")
-        difficulty = request.form.get("difficulty")
-        mood = request.form.get("mood")
+        subject = request.form.get("subject", "").strip()
+        study_time = to_float(request.form.get("study_time"), 0.0)
+        break_time = to_float(request.form.get("break_time"), 0.0)
+        start_time = request.form.get("start_time", "").strip()
+        difficulty = request.form.get("difficulty", "").strip()
+        mood = request.form.get("mood", "").strip()
         date = request.form.get("date") or datetime.now().strftime("%Y-%m-%d")
+
+        if not subject:
+            flash("Subject is required.", "danger")
+            return redirect(url_for("log_session"))
 
         append_study_session(
             DATA_FILE,
@@ -108,6 +135,8 @@ def log_session():
     return render_template("log_session.html")
 
 
+# -------------------- DASHBOARD --------------------
+
 @app.route("/dashboard")
 def dashboard():
     if not login_required():
@@ -116,7 +145,7 @@ def dashboard():
     username = session["username"]
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    daily_goal = float(request.args.get("daily_goal", 4))  # default 4 hours
+    daily_goal = to_float(request.args.get("daily_goal"), 4.0)  # default 4 hours
 
     df = load_user_data(DATA_FILE, username, start_date, end_date)
     metrics = get_dashboard_metrics(df)

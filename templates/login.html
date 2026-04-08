@@ -23,7 +23,6 @@
             color: #fff;
         }
 
-        /* Animated background bubbles */
         .bg-bubble {
             position: absolute;
             border-radius: 50%;
@@ -166,6 +165,23 @@
             color: #cbd5e1;
         }
 
+        .signup-link {
+            text-align: center;
+            margin-top: 12px;
+            font-size: .92rem;
+            color: #dbeafe;
+        }
+
+        .signup-link a {
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
         .tilt {
             transform-style: preserve-3d;
             transition: transform .15s linear;
@@ -195,17 +211,21 @@
             <button type="submit" class="btn-login">Login</button>
         </form>
 
+        <div class="signup-link">
+            New user? <a href="{{ url_for('register') }}">Create account</a>
+        </div>
+
         <div class="small-note">Track your study • Improve focus • Build streak 🔥</div>
     </div>
 
     <script>
-        // Moveable / tilt animation
         const card = document.getElementById("loginCard");
         document.addEventListener("mousemove", (e) => {
             const x = (window.innerWidth / 2 - e.clientX) / 35;
             const y = (window.innerHeight / 2 - e.clientY) / 35;
             card.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
         });
+
         document.addEventListener("mouseleave", () => {
             card.style.transform = "rotateY(0deg) rotateX(0deg)";
         });
