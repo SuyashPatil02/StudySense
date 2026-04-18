@@ -52,7 +52,7 @@ StudySense/
 
 ```bash
 # 1) Clone repo
-git clone https://github.com/classyyfr/StudySense.git
+git clone [https://github.com/classyyfr/StudySense.git] or (https://github.com/SuyashPatil02/StudySense.git)
 cd StudySense
 
 # 2) Create virtual environment
