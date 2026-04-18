@@ -22,46 +22,71 @@
     </div>
 </form>
 
+{% if metrics.total_hours == 0 %}
+<div class="card glass-card p-4 text-center">
+    <h5 class="mb-2">No data available. Start logging sessions ✍️</h5>
+    <a href="{{ url_for('log_session') }}" class="btn btn-info mt-2">Log Session</a>
+</div>
+{% else %}
 <div class="row g-3">
     <div class="col-md-3">
-        <div class="card dashboard-card p-3">
-            <h6>Total Study Hours</h6>
+        <div class="card dashboard-card p-3 metric-card">
+            <h6 class="d-flex align-items-center gap-2">
+                <span class="metric-icon">📘</span> Total Study Hours
+            </h6>
             <h3>{{ metrics.total_hours }}</h3>
         </div>
     </div>
+
     <div class="col-md-3">
-        <div class="card dashboard-card p-3">
-            <h6>Most Studied Subject</h6>
+        <div class="card dashboard-card p-3 metric-card">
+            <h6 class="d-flex align-items-center gap-2">
+                <span class="metric-icon">📚</span> Most Studied Subject
+            </h6>
             <h3>{{ metrics.most_subject }}</h3>
         </div>
     </div>
+
     <div class="col-md-3">
-        <div class="card dashboard-card p-3">
-            <h6>Avg Break Time</h6>
+        <div class="card dashboard-card p-3 metric-card">
+            <h6 class="d-flex align-items-center gap-2">
+                <span class="metric-icon">☕</span> Avg Break Time
+            </h6>
             <h3>{{ metrics.avg_break }} min</h3>
         </div>
     </div>
+
     <div class="col-md-3">
-        <div class="card dashboard-card p-3">
-            <h6>Focus Efficiency</h6>
+        <div class="card dashboard-card p-3 metric-card">
+            <h6 class="d-flex align-items-center gap-2">
+                <span class="metric-icon">🎯</span>
+                Focus Efficiency
+                <span title="Efficiency = study / (study + break in hours)" style="cursor:help;">ℹ️</span>
+            </h6>
             <h3>{{ metrics.avg_efficiency }}%</h3>
         </div>
     </div>
 </div>
 
 <div class="card glass-card p-3 mt-4">
-    <h5>🔥 Study Streak: {{ streak_days }} days</h5>
-    <h6>🎯 Daily Goal Progress (Today: {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs)</h6>
+    <h5 style="color:#dbeafe;">🔥 Study Streak: {{ streak_days }} days</h5>
+    <h6 style="color:#bfdbfe;">
+        🎯 Daily Goal Progress (Selected Date: {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs)
+    </h6>
+    <small style="color:#93c5fd;">
+        Date: {{ goal_progress.target_date if goal_progress.target_date else end_date }}
+    </small>
 
-    <div style="width:100%; height:24px; background:#e9ecef; border-radius:999px; overflow:hidden;">
-        <div id="goalBar" data-progress="{{ goal_progress.percent | default(0) }}"
-            style="height:100%; width:0%; background:linear-gradient(90deg,#0d6efd,#20c997); color:#fff; font-weight:600; font-size:12px; line-height:24px; text-align:center; transition:width .5s ease;">
-            {{ goal_progress.percent | round(1) | default(0) }}%
+    <div
+        style="width:100%; height:26px; background:rgba(255,255,255,.18); border-radius:999px; overflow:hidden; margin-top:12px; border:1px solid rgba(255,255,255,.22);">
+        <div id="goalBar" data-progress="{{ goal_progress.percent | default(0) }}"  
+            style="height:100%; width:0%; color:#fff; font-weight:700; font-size:13px; line-height:26px; text-align:center; transition:width .8s ease, background .4s ease;">
+            {{ goal_progress.percent | round(1) | default(0) }}% // {{ goal_progress.today_hours }} / {{ goal_progress.daily_goal }} hrs
         </div>
     </div>
 </div>
+{% endif %}
 
-<!-- Pomodoro Timer -->
 <div class="card glass-card p-3 mt-4 text-center">
     <h5 id="modeLabel">🍅 Focus Time (25:00)</h5>
     <h1 id="timerDisplay" style="font-size:3rem; font-weight:700;">25:00</h1>
@@ -74,77 +99,90 @@
 </div>
 
 <script>
-    // Goal progress bar
-    const bar = document.getElementById("goalBar");
-    if (bar) {
-        const p = Math.max(0, Math.min(100, Number(bar.dataset.progress) || 0));
-        bar.style.width = p + "%";
-    }
+    (() => {
+        // Progress bar color logic
+        const bar = document.getElementById("goalBar");
+        if (bar) {
+            const p = Math.max(0, Math.min(100, Number(bar.dataset.progress) || 0)); // Clamp between 0-100
 
-    // Pomodoro Timer (25/5)
-    let workDuration = 25 * 60;
-    let breakDuration = 5 * 60;
-    let timeLeft = workDuration;
-    let isRunning = false;
-    let isWorkMode = true;
-    let timerInterval = null;
+            if (p < 50) {
+                bar.style.background = "linear-gradient(90deg,#ef4444,#dc2626)";
+            } else if (p <= 80) {
+                bar.style.background = "linear-gradient(90deg,#f59e0b,#d97706)";
+            } else {
+                bar.style.background = "linear-gradient(90deg,#22c55e,#16a34a)";
+            }
 
-    const timerDisplay = document.getElementById("timerDisplay");
-    const modeLabel = document.getElementById("modeLabel");
-    const startBtn = document.getElementById("startBtn");
-    const pauseBtn = document.getElementById("pauseBtn");
-    const resetBtn = document.getElementById("resetBtn");
-
-    function formatTime(seconds) {
-        const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-        const s = (seconds % 60).toString().padStart(2, "0");
-        return `${m}:${s}`;
-    }
-
-    function updateDisplay() {
-        if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
-        if (modeLabel) modeLabel.textContent = isWorkMode ? "🍅 Focus Time (25:00)" : "☕ Break Time (05:00)";
-    }
-
-    function switchMode() {
-        isWorkMode = !isWorkMode;
-        timeLeft = isWorkMode ? workDuration : breakDuration;
-        updateDisplay();
-        alert(isWorkMode ? "Break over! Back to study." : "Focus session done! Take a 5 min break.");
-    }
-
-    function tick() {
-        if (timeLeft > 0) {
-            timeLeft--;
-            updateDisplay();
-        } else {
-            switchMode();
+            requestAnimationFrame(() => {
+                bar.style.width = p + "%";
+            });
         }
-    }
 
-    function startTimer() {
-        if (isRunning) return;
-        isRunning = true;
-        timerInterval = setInterval(tick, 1000);
-    }
+        // Pomodoro timer
+        let workDuration = 25 * 60;
+        let breakDuration = 5 * 60;
+        let timeLeft = workDuration;
+        let isRunning = false;
+        let isWorkMode = true;
+        let timerInterval = null;
 
-    function pauseTimer() {
-        isRunning = false;
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
+        const timerDisplay = document.getElementById("timerDisplay");
+        const modeLabel = document.getElementById("modeLabel");
+        const startBtn = document.getElementById("startBtn");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const resetBtn = document.getElementById("resetBtn");
 
-    function resetTimer() {
-        pauseTimer();
-        isWorkMode = true;
-        timeLeft = workDuration;
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+            const s = (seconds % 60).toString().padStart(2, "0");
+            return `${m}:${s}`;
+        }
+
+        function updateDisplay() {
+            if (timerDisplay) timerDisplay.textContent = formatTime(timeLeft);
+            if (modeLabel) modeLabel.textContent = isWorkMode ? "🍅 Focus Time (25:00)" : "☕ Break Time (05:00)";
+        }
+
+        function switchMode() {
+            isWorkMode = !isWorkMode;
+            timeLeft = isWorkMode ? workDuration : breakDuration;
+            updateDisplay();
+            alert(isWorkMode ? "Break over! Back to study." : "Focus session done! Take a 5 min break.");
+        }
+
+        function tick() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                switchMode();
+            }
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            isWorkMode = true;
+            timeLeft = workDuration;
+            updateDisplay();
+        }
+
+        startBtn?.addEventListener("click", startTimer);
+        pauseBtn?.addEventListener("click", pauseTimer);
+        resetBtn?.addEventListener("click", resetTimer);
+
         updateDisplay();
-    }
-
-    if (startBtn) startBtn.addEventListener("click", startTimer);
-    if (pauseBtn) pauseBtn.addEventListener("click", pauseTimer);
-    if (resetBtn) resetBtn.addEventListener("click", resetTimer);
-
-    updateDisplay();
+    })();
 </script>
 {% endblock %}

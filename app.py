@@ -11,22 +11,33 @@ from utils.analyzer import (
     get_goal_progress,
     export_filtered_report,
     register_user,
-    authenticate_user
+    authenticate_user,
+    recalculate_efficiency_for_existing_rows,  # ✅ added
 )
 from utils.recommender import generate_recommendations
 from utils.streak_tracker import calculate_streak
 
 app = Flask(__name__)
-app.secret_key = "studysense_secret_key_2026"  # change for production
+app.secret_key = "studysense_secret_key_2026"
 
 DATA_FILE = "study_data.csv"
 USERS_FILE = "users.csv"
 GRAPH_DIR = os.path.join("static", "graphs")
 
+# ✅ One-time flag so old wrong efficiency values are fixed only once
+EFFICIENCY_FIX_DONE = False
+
 
 @app.before_request
 def setup():
+    global EFFICIENCY_FIX_DONE
     ensure_files_exist(DATA_FILE, USERS_FILE, GRAPH_DIR)
+
+    # ✅ one-time data correction for old rows
+    if not EFFICIENCY_FIX_DONE:
+        fixed = recalculate_efficiency_for_existing_rows(DATA_FILE)
+        print(f"✅ Efficiency migration done. Fixed rows: {fixed}")
+        EFFICIENCY_FIX_DONE = True
 
 
 def login_required():
@@ -46,8 +57,6 @@ def home():
         return redirect(url_for("login"))
     return render_template("home.html", username=session["username"])
 
-
-# -------------------- AUTH --------------------
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -97,8 +106,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-# -------------------- STUDY SESSION --------------------
-
 @app.route("/log-session", methods=["GET", "POST"])
 def log_session():
     if not login_required():
@@ -135,8 +142,6 @@ def log_session():
     return render_template("log_session.html")
 
 
-# -------------------- DASHBOARD --------------------
-
 @app.route("/dashboard")
 def dashboard():
     if not login_required():
@@ -145,12 +150,14 @@ def dashboard():
     username = session["username"]
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    daily_goal = to_float(request.args.get("daily_goal"), 4.0)  # default 4 hours
+    daily_goal = to_float(request.args.get("daily_goal"), 4.0)
 
     df = load_user_data(DATA_FILE, username, start_date, end_date)
     metrics = get_dashboard_metrics(df)
     streak_days = calculate_streak(df)
-    goal_progress = get_goal_progress(df, daily_goal)
+
+    # use selected end_date for goal progress context
+    goal_progress = get_goal_progress(df, daily_goal, end_date)
 
     return render_template(
         "dashboard.html",

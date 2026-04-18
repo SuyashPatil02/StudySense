@@ -52,6 +52,25 @@ body {
     animation: floatIn 0.6s ease-in-out;
 }
 
+/* Added: animated icon cards */
+.metric-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .28);
+}
+
+.metric-icon {
+    display: inline-block;
+    transition: transform .25s ease;
+}
+
+.metric-card:hover .metric-icon {
+    transform: scale(1.2) rotate(-8deg);
+}
+
 .fade-in {
     animation: fadeIn 0.7s ease;
 }
