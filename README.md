@@ -78,16 +78,22 @@ Open in browser:
 - <img width="986" height="480" alt="image" src="https://github.com/user-attachments/assets/cd9f2d53-dade-442e-8b6a-6b3915cbd10c" />
 
 - Analytics Graphs
+- <img width="1293" height="871" alt="image" src="https://github.com/user-attachments/assets/f0e9d495-d929-4f93-9ded-25cb955c1d2b" />
+
 - Recommendations Page
+- <img width="1917" height="912" alt="image" src="https://github.com/user-attachments/assets/e1573f95-7d46-4545-9e57-e6091a0b12b6" />
+
 - Goal Progress / Streak Card
+<img width="1542" height="193" alt="image" src="https://github.com/user-attachments/assets/171aa19f-e269-4e3a-b9bb-3b35ea0b7a7c" />
 
 ## 🚀 Future Enhancements
 
 - User authentication (Login/Signup)
 - Cloud database (SQLite/MySQL/PostgreSQL)
-- Pomodoro timer integration
 - AI-based study recommendations
 - Weekly email reports
+- Notifications
+- Converting into Applications 
 
 ## 👨‍💻 Contributors
 
