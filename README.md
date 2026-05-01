@@ -74,9 +74,9 @@ Open in browser:
 
 ## 📸 Screenshots
 
-> Add your screenshots here before final submission.
-
 - Dashboard
+- <img width="986" height="480" alt="image" src="https://github.com/user-attachments/assets/cd9f2d53-dade-442e-8b6a-6b3915cbd10c" />
+
 - Analytics Graphs
 - Recommendations Page
 - Goal Progress / Streak Card
