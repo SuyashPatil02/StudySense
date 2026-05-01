@@ -24,7 +24,7 @@ StudySense is a smart study tracking web app built with **Flask** that helps stu
 ## 🛠️ Tech Stack
 
 - **Backend:** Python, Flask
-- **Frontend:** HTML, CSS, Bootstrap, Jinja2
+- **Frontend:** HTML, CSS, Bootstrap
 - **Data Handling:** Pandas / CSV-based storage
 - **Visualization:** Matplotlib/Seaborn (if used in your project)
 
